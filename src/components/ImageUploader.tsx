@@ -18,7 +18,7 @@ const ImageUploader = () => {
             setIsUploading(true);
             const imageUrl = await uploadToCloudinary(file!);
 
-            generateQRCode(`${imageUrl}`);
+            generateQRCode(`${window.location.href}?i=${imageUrl}`);
             setIsUploading(false);
         };
 
