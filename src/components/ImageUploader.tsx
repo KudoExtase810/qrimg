@@ -2,79 +2,79 @@ import React, { useState } from "react";
 import QRCode from "qrcode";
 import { uploadToCloudinary } from "../utils";
 import toast from "react-hot-toast";
+import UploadedImage from "./UploadedImage";
+
+interface ImageWithQRCode {
+    image: string | ArrayBuffer | null;
+    qrCode: string;
+}
 
 const ImageUploader = () => {
-    const [isUploading, setIsUploading] = useState(false);
-    const [image, setImage] = useState<string | ArrayBuffer | null>(null);
-    const [qrCode, setQRCode] = useState<string>("");
+    const [isUploading, setIsUploading] = useState<boolean>(false);
+    const [imageList, setImageList] = useState<ImageWithQRCode[]>([]);
 
     const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        const reader = new FileReader();
+        const files = Array.from(e.target.files || []);
+        setIsUploading(true);
 
-        reader.onloadend = async () => {
-            setImage(reader.result);
+        files.forEach(async (file) => {
+            const reader = new FileReader();
+            reader.onloadend = async () => {
+                const imageUrl = await uploadToCloudinary(file);
+                const encodedImageUrl = encodeURIComponent(imageUrl!);
+                const qrCodeUrl = await generateQRCode(
+                    `${window.location.href}?i=${encodedImageUrl}`
+                );
 
-            setIsUploading(true);
-            const imageUrl = await uploadToCloudinary(file!);
+                setImageList((prevImageList) => [
+                    ...prevImageList,
+                    { image: reader.result, qrCode: qrCodeUrl },
+                ]);
 
-            generateQRCode(
-                `${window.location.href}?i=${encodeURIComponent(imageUrl!)}`
-            );
-            setIsUploading(false);
-        };
+                if (files.indexOf(file) === files.length - 1) {
+                    setIsUploading(false);
+                }
+            };
 
-        if (file) {
             reader.readAsDataURL(file);
-        }
+        });
     };
 
-    const generateQRCode = async (url: string) => {
+    const generateQRCode = async (url: string): Promise<string> => {
         try {
-            const qrCodeUrl = await QRCode.toDataURL(url);
-            setQRCode(qrCodeUrl);
+            return await QRCode.toDataURL(url);
         } catch (error) {
             toast.error("QR Code generation failed.");
+            return "";
         }
     };
 
     return (
-        <>
-            <div className="flex flex-col items-center p-4">
-                <h1 className="text-2xl font-bold mb-6 text-center">
-                    Upload your image
-                </h1>
-                <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    className="mb-4 file-input file-input-bordered"
-                />
-                {image && (
-                    <img
-                        src={image as string}
-                        alt="Uploaded"
-                        className="max-w-xs mb-4 border border-gray-300 rounded"
+        <div className="flex flex-col items-center p-4">
+            <h1 className="text-2xl font-bold mb-6 text-center">
+                Upload your images
+            </h1>
+            <input
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={handleImageUpload}
+                className="mb-4 file-input file-input-bordered"
+            />
+            {isUploading && (
+                <span className="loading loading-spinner size-16 bg-info my-4" />
+            )}
+            <ol className="flex flex-col items-center gap-24 md:gap-6">
+                {imageList.map((item, index) => (
+                    <UploadedImage
+                        key={index}
+                        image={item.image}
+                        qrCode={item.qrCode}
+                        index={index}
                     />
-                )}
-                {isUploading && (
-                    // <div className="fixed h-screen w-screen inset-0 bg-black opacity-40 flex items-center justify-center z-50">
-                    <span className="loading loading-spinner size-16 bg-info my-4" />
-                )}
-                {qrCode && (
-                    <div className="flex flex-col items-center">
-                        <h2 className="text-xl font-semibold mb-4">QR Code:</h2>
-                        <a href={qrCode} download="qrcode.png">
-                            <img
-                                src={qrCode}
-                                alt="QR Code"
-                                className="max-w-xs border border-gray-300 rounded"
-                            />
-                        </a>
-                    </div>
-                )}
-            </div>
-        </>
+                ))}
+            </ol>
+        </div>
     );
 };
 
