@@ -26,10 +26,13 @@ const ImageUploader = () => {
                     `${window.location.href}?i=${encodedImageUrl}`
                 );
 
-                setImageList((prevImageList) => [
-                    ...prevImageList,
-                    { image: reader.result, qrCode: qrCodeUrl },
-                ]);
+                // Don't append the image if an error occured
+                if (imageUrl) {
+                    setImageList((prevImageList) => [
+                        ...prevImageList,
+                        { image: reader.result, qrCode: qrCodeUrl },
+                    ]);
+                }
 
                 if (files.indexOf(file) === files.length - 1) {
                     setIsUploading(false);
