@@ -1,8 +1,8 @@
 import axios from "axios";
 import toast from "react-hot-toast";
 
-const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/duqkgxds7/image/upload";
-const CLOUDINARY_UPLOAD_PRESET = "ovenglow";
+const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dnftkumo6/image/upload";
+const CLOUDINARY_UPLOAD_PRESET = "nusukcard";
 
 export const uploadToCloudinary = async (file: File) => {
     let uploadedImgUrl: string | null = null;
