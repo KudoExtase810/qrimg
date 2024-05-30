@@ -3,6 +3,7 @@ import toast from "react-hot-toast";
 
 const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dnftkumo6/image/upload";
 const CLOUDINARY_UPLOAD_PRESET = "nusukcard";
+const CLOUD_NAME = "dnftkumo6";
 
 export const uploadToCloudinary = async (file: File) => {
     let uploadedImgUrl: string | null = null;
@@ -20,4 +21,17 @@ export const uploadToCloudinary = async (file: File) => {
     }
 
     return uploadedImgUrl;
+};
+
+export const modifyCloudinaryUrl = (
+    string: string,
+    action: "split" | "append"
+) => {
+    let newUrl = "";
+    if (action === "split") {
+        newUrl = string.split("upload/v")[1];
+    } else {
+        newUrl = `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/v${string}`;
+    }
+    return newUrl;
 };

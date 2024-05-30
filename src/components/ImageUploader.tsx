@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import QRCode from "qrcode";
-import { uploadToCloudinary } from "../utils";
+import { modifyCloudinaryUrl, uploadToCloudinary } from "../utils";
 import toast from "react-hot-toast";
 import UploadedImage from "./UploadedImage";
 import FailedUploads from "./FailedUploads";
@@ -28,9 +28,12 @@ const ImageUploader = () => {
 
                 // Proceed if no errors
                 if (imageUrl) {
-                    const encodedImageUrl = encodeURIComponent(imageUrl!);
+                    const splitUrl = modifyCloudinaryUrl(imageUrl, "split");
+
                     const qrCodeUrl = await generateQRCode(
-                        `${window.location.href}?i=${encodedImageUrl}`
+                        `${window.location.href}?i=${encodeURIComponent(
+                            splitUrl
+                        )}`
                     );
                     setImageList((prevImageList) => [
                         ...prevImageList,
